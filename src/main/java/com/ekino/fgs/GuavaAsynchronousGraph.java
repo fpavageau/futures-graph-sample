@@ -8,7 +8,6 @@
 package com.ekino.fgs;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.util.concurrent.AsyncFunction;
@@ -39,10 +38,9 @@ public class GuavaAsynchronousGraph extends AsynchronousGraph {
         ListenableFuture<Void> future1 = DEFAULT_EXECUTOR.submit(new ServiceCallable(service1));
         ListenableFuture<Void> future3 = DEFAULT_EXECUTOR.submit(new ServiceCallable(service3));
         ListenableFuture<Void> future2 = Futures.transform(future1,
-                new ChainingAsyncFunction<Void, Void>(new ServiceCallable(service2), DEDICATED_EXECUTOR));
+                new ChainingAsyncFunction<Void>(service2, DEDICATED_EXECUTOR));
         @SuppressWarnings("unchecked") ListenableFuture<List<Void>> barrier = Futures.allAsList(future2, future3);
-        ListenableFuture<Void> future4 = Futures.transform(barrier,
-                new ChainingAsyncFunction<List<Void>, Void>(new ServiceCallable(service4)));
+        ListenableFuture<Void> future4 = Futures.transform(barrier, new ChainingAsyncFunction<List<Void>>(service4));
 
         try {
             future4.get();
@@ -59,49 +57,28 @@ public class GuavaAsynchronousGraph extends AsynchronousGraph {
 
 
     /**
-     * {@link Service} wrapper.
-     */
-    private static class ServiceCallable implements Callable<Void> {
-        private final Service service;
-
-
-        private ServiceCallable(Service service) {
-            this.service = service;
-        }
-
-
-        @Override
-        public Void call()
-                throws Exception {
-            service.call();
-            return null;
-        }
-    }
-
-
-    /**
      * Chains a {@link Service} after another.
      */
-    private static class ChainingAsyncFunction<I, O> implements AsyncFunction<I, O> {
-        private final Callable<O> service;
+    private static class ChainingAsyncFunction<I> implements AsyncFunction<I, Void> {
+        private final Service service;
         private final ListeningExecutorService executor;
 
 
-        public ChainingAsyncFunction(Callable<O> service) {
+        public ChainingAsyncFunction(Service service) {
             this(service, DEFAULT_EXECUTOR);
         }
 
 
-        public ChainingAsyncFunction(Callable<O> service, ListeningExecutorService executor) {
+        public ChainingAsyncFunction(Service service, ListeningExecutorService executor) {
             this.service = service;
             this.executor = executor;
         }
 
 
         @Override
-        public ListenableFuture<O> apply(I input)
+        public ListenableFuture<Void> apply(I input)
                 throws Exception {
-            return executor.submit(service);
+            return executor.submit(new ServiceCallable(service));
         }
     }
 }

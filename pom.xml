@@ -10,13 +10,37 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Parallel execution of the surefire tests -->
         <parallel>methods</parallel>
+        <akka.version>2.0.2</akka.version>
         <slf4j.version>1.6.6</slf4j.version>
     </properties>
+    <repositories>
+        <repository>
+            <id>typesafe</id>
+            <name>Typesafe Repository</name>
+            <url>http://repo.typesafe.com/typesafe/releases/</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-slf4j</artifactId>
+            <version>${akka.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.9.2</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

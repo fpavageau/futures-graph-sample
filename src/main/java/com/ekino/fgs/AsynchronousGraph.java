@@ -8,6 +8,8 @@
 package com.ekino.fgs;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -21,9 +23,11 @@ import com.google.common.util.concurrent.MoreExecutors;
  */
 public abstract class AsynchronousGraph {
     protected static final ListeningExecutorService DEFAULT_EXECUTOR =
-            MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(2));
-    protected static final ListeningExecutorService DEDICATED_EXECUTOR =
-            MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
+            MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                    Math.max(Runtime.getRuntime().availableProcessors() - 1, 1),
+                    new NamedThreadFactory("default-pool-")));
+    protected static final ListeningExecutorService DEDICATED_EXECUTOR = MoreExecutors.listeningDecorator(
+            Executors.newSingleThreadExecutor(new NamedThreadFactory("dedicated-pool-")));
 
     protected final Service service1;
     protected final Service service2;
@@ -61,5 +65,22 @@ public abstract class AsynchronousGraph {
 
     public static enum Status {
         OK, INTERRUPTED, ABORTED
+    }
+
+
+    private static class NamedThreadFactory implements ThreadFactory {
+        private final AtomicInteger count = new AtomicInteger();
+        private final String prefix;
+
+
+        private NamedThreadFactory(String prefix) {
+            this.prefix = prefix;
+        }
+
+
+        @Override
+        public Thread newThread(Runnable r) {
+            return new Thread(r, prefix + count.getAndIncrement());
+        }
     }
 }

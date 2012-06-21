@@ -20,6 +20,13 @@ public enum AsynchronousGraphFactory {
             return new GuavaAsynchronousGraph(mocks.services.get(0), mocks.services.get(1), mocks.services.get(2),
                     mocks.services.get(3));
         }
+    },
+    AKKA {
+        @Override
+        public AsynchronousGraph create(Mocks mocks) {
+            return new AkkaAsynchronousGraph(mocks.services.get(0), mocks.services.get(1), mocks.services.get(2),
+                    mocks.services.get(3));
+        }
     };
 
 
